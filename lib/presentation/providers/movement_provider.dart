@@ -2,6 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_finance/domain/movement.dart';
 
+
+enum FilterType { all, income, expense }
+final selectedFilterProvider = StateProvider<FilterType>((ref) => FilterType.all);
+
+final filteredMovementsProvider = Provider<List<Movement>>((ref) {
+  final filter = ref.watch(selectedFilterProvider);
+  final movements = ref.watch(movementProvider);
+
+  switch (filter) {
+    case FilterType.income:
+      return movements.where((m) => m.isIncome).toList()..sort((a, b) => b.date.compareTo(a.date));
+    case FilterType.expense:
+      return movements.where((m) => !m.isIncome).toList()..sort((a, b) => b.date.compareTo(a.date));
+    case FilterType.all:
+      return movements.toList()..sort((a, b) => b.date.compareTo(a.date));
+   }
+});
+
 final movementProvider =
     StateNotifierProvider<MovementNotifier, List<Movement>>(
       (ref) => MovementNotifier(FirebaseFirestore.instance),
@@ -42,12 +60,12 @@ final totalIncomeProvider = Provider<double>((ref) {
   final movements = ref.watch(movementProvider);
   return movements
       .where((m) => m.isIncome)
-      .fold(0.0, (sum, m) => sum + m.amount);
+      .fold(0, (sum, m) => sum + m.amount);
 });
 
 final totalExpenseProvider = Provider<double>((ref) {
   final movements = ref.watch(movementProvider);
   return movements
       .where((m) => !m.isIncome)
-      .fold(0.0, (sum, m) => sum + m.amount);
+      .fold(0, (sum, m) => sum + m.amount);
 });
