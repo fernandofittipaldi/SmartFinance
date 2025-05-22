@@ -122,6 +122,35 @@ class BalanceScreen extends ConsumerWidget  {
           ),
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        currentIndex: 0,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              context.go('/balance');
+              break;
+            case 1:
+              context.go('/general-balance');
+              break;
+            case 2:
+              context.go('/prices');
+              break;
+            case 3:
+              context.go('/perfil');
+              break;
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.attach_money), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        ],
+      ),
     );
   }
 }
