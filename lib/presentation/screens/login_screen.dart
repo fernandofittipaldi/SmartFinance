@@ -1,131 +1,97 @@
 import 'package:flutter/material.dart';
-import 'package:smart_finance/controller/login_controller.dart';
-import 'package:smart_finance/utils/validators.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _controller = LoginController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+class Login extends StatelessWidget {
+  const Login({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 48),
-                  const Text(
-                    'Iniciar sesión',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text('SmartFinance', style: TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 32),
-
-                  // Campo de correo
-                  TextFormField(
-                    controller: _controller.emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      hintText: 'Correo electrónico',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
-                    validator: validateEmail(value),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Campo de contraseña
-                  TextFormField(
-                    controller: _controller.passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      hintText: 'Contraseña',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      suffixIcon: Icon(Icons.visibility_off),
-                    ),
-                    validator: validatePassword(value),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        // Implementar recuperación
-                      },
-                      child: const Text('¿Olvidaste tu contraseña?'),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _controller.login(context);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text('Ingresar'),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('¿No tenes una cuenta? '),
-                      GestureDetector(
-                        onTap: () {
-                          // Navegar al registro
-                        },
-                        child: const Text(
-                          'Registrate',
-                          style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-                        ),
-                      )
-                    ],
-                  ),
-
-                  const SizedBox(height: 32),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: DefaultTabController(
+        length: 2, 
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('Iniciar sesión y registrarse'),
+            bottom: TabBar(
+              tabs: [
+                Tab (text: 'Iniciar sesión'),
+                Tab (text: 'Registrarse'),
                 ],
               ),
-            ),
+          ),
+          body: TabBarView(children: [
+            LoginCard(),
+            SingupCard(),
+            ]
+          )
+        )
+      )
+    );
+  }
+}
+
+class LoginCard extends StatelessWidget{
+  Widget build (BuildContext context){
+    return Center(
+      child: Card(
+        margin: EdgeInsets.all(20.0),
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: InputDecoration(labelText: 'Email'),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                decoration: InputDecoration(labelText: 'Contraseña'),
+                obscureText: true,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: (){
+                  //Aca se busca el usuario y contra en FireBase
+                },
+                child: Text('Iniciar sesión'))
+            ],
+            )
+          )
+        )
+    );
+  }  
+}
+
+class SingupCard extends StatelessWidget{
+  @override
+  Widget build (BuildContext context){
+    return Center(
+      child: Card(
+        margin: EdgeInsets.all(20.0),
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                decoration: InputDecoration(labelText: 'Nombre completo'),
+              ),
+              SizedBox( height: 10),
+              TextField(
+                decoration: InputDecoration(labelText: 'Correo electrónico'),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                decoration: InputDecoration(labelText: 'Contraseña'),
+                obscureText: true,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: (){
+                  //Logica de crear en la base de Firebase el usuario
+                },
+                child: Text('Registrarse'))
+            ],
           ),
         ),
       ),
