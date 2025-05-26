@@ -4,7 +4,10 @@ import 'package:smart_finance/presentation/screens/add_income_screen.dart';
 import 'package:smart_finance/presentation/screens/balance_screen.dart';
 import 'package:smart_finance/presentation/screens/general_balance_screen.dart';
 import 'package:smart_finance/presentation/screens/goal_screen.dart';
+import 'package:smart_finance/presentation/screens/login_screen.dart';
 import 'package:smart_finance/presentation/screens/price_screen.dart';
+import 'package:smart_finance/presentation/screens/profile_screen.dart';
+import 'package:smart_finance/presentation/screens/sing_up_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/balance',
@@ -32,6 +35,18 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/goals', 
       builder: (context, state) => GoalScreen(),
+    ),
+    GoRoute(
+      path: '/login', 
+      builder: (context, state) => LoginScreen(),
+    ),
+    GoRoute(
+      path: '/profile', 
+      builder: (context, state) => ProfileScreen(),
+    ),
+    GoRoute(
+      path: '/sing_up', 
+      builder: (context, state) => SingUpScreen(),
     )
   ],
 );
