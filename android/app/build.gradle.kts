@@ -31,6 +31,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled true
     }
 	ndkVersion = "27.0.12077973"
 
