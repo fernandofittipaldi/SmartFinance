@@ -1,10 +1,141 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smart_finance/presentation/providers/movement_provider.dart';
+import 'package:smart_finance/utils/format_utils.dart';
 
-class PriceScreen extends StatelessWidget {
+class PriceScreen extends ConsumerWidget {
   const PriceScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final incomeTotal = ref.watch(totalIncomeProvider);
+    final expenseTotal = ref.watch(totalExpenseProvider);
+
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text(
+                'Cotizaciones',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(
+                    children: [
+                      const Text("Ingresos Totales"),
+                      Text(
+                        formatCurrency(incomeTotal),
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      const Text("Gastos Totales"),
+                      Text(
+                        ('-') + formatCurrency(expenseTotal),
+                        style: const TextStyle(color: Colors.red, fontSize: 20),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 20,
+                    crossAxisSpacing: 20,
+                    childAspectRatio: 1.5,
+                    children: [
+                      _buildPriceButton(
+                        context,
+                        'Cotización Dólar',
+                        () => _navigate(context, 'dolar'),
+                      ),
+                      _buildPriceButton(
+                        context,
+                        'Cotización Euro',
+                        () => _navigate(context, 'euro'),
+                      ),
+                      _buildPriceButton(
+                        context,
+                        'Cotizacion Criptomonedas',
+                        () => _navigate(context, 'crypto'),
+                      ),
+                      _buildPriceButton(
+                        context,
+                        'Conversor de Moneda',
+                        () => _navigate(context, 'conversor'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
+
+  Widget _buildPriceButton(
+    BuildContext context,
+    String label,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.lightBlue.shade100,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _navigate(BuildContext context, String tipo) {
+  switch (tipo) {
+    case 'dolar':
+      context.go('/dollar-rates');
+      break;
+    case 'euro':
+      context.go('/euro-rates');
+      break;
+    case 'crypto':
+      context.go('/crypto-rates');
+      break;
+    case 'conversor':
+      context.go('/currency-converter');
+      break;
+    default:
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Elegiste: $tipo')),
+      );
+  }
+}
+
 }

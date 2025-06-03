@@ -136,10 +136,10 @@ class BalanceScreen extends ConsumerWidget  {
               context.go('/general-balance');
               break;
             case 2:
-              context.go('/prices');
+              context.go('/investments');
               break;
             case 3:
-              context.go('/perfil');
+              context.go('/prices');
               break;
           }
         },
