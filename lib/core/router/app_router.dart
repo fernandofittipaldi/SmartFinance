@@ -10,6 +10,7 @@ import 'package:smart_finance/presentation/screens/general_balance_screen.dart';
 import 'package:smart_finance/presentation/screens/goal_screen.dart';
 import 'package:smart_finance/presentation/screens/investment_suggestions_screen.dart';
 import 'package:smart_finance/presentation/screens/investments_screen.dart';
+import 'package:smart_finance/presentation/screens/login_screen.dart';
 import 'package:smart_finance/presentation/screens/price_screen.dart';
 import 'package:smart_finance/presentation/screens/risk_profile_screen.dart';
 
@@ -67,6 +68,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/investment-suggestions', 
       builder: (context, state) => const InvestmentSuggestionsScreen(),
+    ),
+    GoRoute(
+      path: '/login', 
+      builder: (context, state) => const LoginScreen(),
     ),
   ],
 );
