@@ -14,7 +14,7 @@ import 'package:smart_finance/presentation/screens/price_screen.dart';
 import 'package:smart_finance/presentation/screens/risk_profile_screen.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/balance',
+  initialLocation: '/login',
   routes: [
     GoRoute(
       path: '/balance', 
