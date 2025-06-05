@@ -12,6 +12,7 @@ import 'package:smart_finance/presentation/screens/investment_suggestions_screen
 import 'package:smart_finance/presentation/screens/investments_screen.dart';
 import 'package:smart_finance/presentation/screens/login_screen.dart';
 import 'package:smart_finance/presentation/screens/price_screen.dart';
+import 'package:smart_finance/presentation/screens/profile_screen.dart';
 import 'package:smart_finance/presentation/screens/risk_profile_screen.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -72,6 +73,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/login', 
       builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/profile', 
+      builder: (context, state) => const ProfileScreen(),
     ),
   ],
 );
