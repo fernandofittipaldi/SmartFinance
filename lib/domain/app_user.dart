@@ -5,14 +5,14 @@ enum RiskProfile { conservador, moderado, arriesgado }
 
 class AppUser  {
   final String uid;
-  final String name;
-  final String lastName;
-  final String email;
-  final String phone;
-  final String? photoUrl;
-  final RiskProfile? riskProfile;
-  final List<Movement> movements;
-  final List<Goal> goals;
+  String name;
+  String lastName;
+  String email;
+  String phone;
+  String? photoUrl;
+  RiskProfile? riskProfile;
+  List<Movement> movements;
+  List<Goal> goals;
 
   AppUser ({
     required this.uid,
