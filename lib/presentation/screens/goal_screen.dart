@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:smart_finance/domain/goal.dart'; // Tu domain goal.dart
 
 // Provider para manejar las metas
@@ -81,7 +80,7 @@ class GoalScreen extends ConsumerWidget {
 
   Widget _buildAddButton(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.go('/add-goal'),
+      onTap: () => context.push('/add_goal'),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.lightBlue.shade100,
@@ -104,7 +103,7 @@ class GoalScreen extends ConsumerWidget {
     final progressPercentage = (progress * 100).clamp(0, 100);
 
     return GestureDetector(
-      onTap: () => context.go('/goal-balance/${goal.name}'),
+      onTap: () => context.push('/add_goal/${goal.name}'),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.lightGreen.shade100,

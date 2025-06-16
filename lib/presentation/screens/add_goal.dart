@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_finance/domain/goal.dart';
+import 'package:smart_finance/presentation/screens/goal_screen.dart';
 
 class AddGoalScreen extends ConsumerStatefulWidget {
   const AddGoalScreen({super.key});
@@ -180,7 +181,7 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
                       ),
                     );
 
-                    context.go('/goals');
+                    context.push('/goals');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
