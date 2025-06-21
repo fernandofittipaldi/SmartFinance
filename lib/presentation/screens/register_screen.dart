@@ -1,131 +1,126 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:go_router/go_router.dart';
-import '../../domain/app_user.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_controller.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _phoneController = TextEditingController();
 
-  bool _isLoading = false;
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _nameController.dispose();
+    _lastNameController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
 
-  void _register() async {
+  void _onRegister() {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
-
-    try {
-      final userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      final user = userCredential.user;
-
-      if (user != null) {
-        final userModel = AppUser (
-          uid: user.uid,
+    ref
+        .read(authControllerProvider.notifier)
+        .register(
+          context: context,
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
           name: _nameController.text.trim(),
           lastName: _lastNameController.text.trim(),
-          email: _emailController.text.trim(),
           phone: _phoneController.text.trim(),
-          photoUrl: null,
         );
-
-        try {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .set(userModel.toMap());
-              print('Usuario guardado en Firestore con UID: ${user.uid}');
-        } catch (e) {
-          print('Error guardando en Firestore: $e');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error guardando en Firestore')),
-          );
-        }
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Usuario registrado con éxito")),
-          );
-        }
-        await FirebaseAuth.instance.signOut();
-        if (context.mounted) {
-        context.go('/login');
-        }
-      }
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Error al registrar')),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authControllerProvider);
+
     return Scaffold(
       appBar: AppBar(title: const Text("Registro")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
+          child: ListView(
             children: [
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Nombre'),
-                validator: (value) =>
-                    value!.isEmpty ? 'Ingrese su nombre' : null,
+                inputFormatters: [LengthLimitingTextInputFormatter(26)],
+                validator:
+                    (value) => value!.isEmpty ? 'Ingrese su nombre' : null,
               ),
               TextFormField(
                 controller: _lastNameController,
                 decoration: const InputDecoration(labelText: 'Apellido'),
-                validator: (value) =>
-                    value!.isEmpty ? 'Ingrese su apellido' : null,
+                inputFormatters: [LengthLimitingTextInputFormatter(26)],
+                validator:
+                    (value) => value!.isEmpty ? 'Ingrese su apellido' : null,
               ),
               TextFormField(
                 controller: _phoneController,
                 decoration: const InputDecoration(labelText: 'Teléfono'),
-                validator: (value) =>
-                    value!.isEmpty ? 'Ingrese su teléfono' : null,
+                inputFormatters: [LengthLimitingTextInputFormatter(15)],
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Ingrese su teléfono';
+                  }
+                  final numericRegex = RegExp(r'^\+?\d{7,15}$');
+                  if (!numericRegex.hasMatch(value)) {
+                    return 'Ingrese un número válido (solo dígitos, opcional +)';
+                  }
+                  return null;
+                },
               ),
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
-                validator: (value) =>
-                    value!.isEmpty ? 'Ingrese su email' : null,
+                inputFormatters: [LengthLimitingTextInputFormatter(30)],
+                keyboardType: TextInputType.emailAddress,
+                validator:
+                    (value) => value!.isEmpty ? 'Ingrese su email' : null,
               ),
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'Contraseña'),
-                validator: (value) =>
-                    value!.length < 6 ? 'Mínimo 6 caracteres' : null,
+                inputFormatters: [LengthLimitingTextInputFormatter(12)],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Ingrese su contraseña';
+                  }
+                  if (value.length < 8 || value.length > 12) {
+                    return 'Debe tener entre 8 y 12 caracteres';
+                  }
+                  if (!RegExp(
+                    r'^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]+$',
+                  ).hasMatch(value)) {
+                    return 'Debe contener letras y números';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 20),
-              _isLoading
-                  ? const CircularProgressIndicator()
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(
-                      onPressed: _register,
-                      child: const Text("Registrarse"),
-                    ),
+                    onPressed: _onRegister,
+                    child: const Text("Registrarse"),
+                  ),
             ],
           ),
         ),

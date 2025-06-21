@@ -1,62 +1,73 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../providers/auth_controller.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  String? _error;
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
-  void _loginUser() async {
+  void _loginUser() {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      context.go('/balance');
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        _error = e.message ?? 'Error desconocido';
-      });
-    }
+    ref.read(authControllerProvider.notifier)
+        .login(context: context, email: email, password: password);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authControllerProvider);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Iniciar sesión')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            if (_error != null)
-              Text(_error!, style: const TextStyle(color: Colors.red)),
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
+              inputFormatters: [LengthLimitingTextInputFormatter(30)],
             ),
             TextField(
               controller: _passwordController,
               decoration: const InputDecoration(labelText: 'Contraseña'),
               obscureText: true,
+              inputFormatters: [LengthLimitingTextInputFormatter(12)],
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _loginUser,
-              child: const Text('Iniciar sesión'),
+            isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                  onPressed: _loginUser,
+                  child: const Text('Iniciar sesión'),
+                ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () {
+                final email = _emailController.text.trim();
+                ref.read(authControllerProvider.notifier)
+                    .sendPasswordResetEmail(context: context, email: email);
+              },
+              child: const Text('¿Olvidaste tu contraseña?'),
             ),
+            const SizedBox(height: 10),
             TextButton(
               onPressed: () => context.go('/register'),
               child: const Text('¿No tenés cuenta? Registrate'),
