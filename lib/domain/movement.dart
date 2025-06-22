@@ -55,6 +55,7 @@ class Movement {
       category: map['category'] ?? '',
       amount: (map['amount'] ?? 0).toDouble(),
       isIncome: map['isIncome'] ?? true,
+      uid: map['uid'],
     );
   }
 
