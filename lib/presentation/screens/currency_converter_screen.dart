@@ -29,7 +29,7 @@ class _CurrencyConverterScreenState extends ConsumerState<CurrencyConverterScree
 
   @override
   Widget build(BuildContext context) {
-    final totalIncome = ref.watch(totalIncomeProvider);
+    final totalIncome = ref.watch(availableBalance);
     final cryptoRates = ref.watch(cryptoRateProvider);
     final dollarRates = ref.watch(dollarRateProvider);
     final euroRates = ref.watch(euroRateProvider);
@@ -64,7 +64,7 @@ class _CurrencyConverterScreenState extends ConsumerState<CurrencyConverterScree
             ),
             const SizedBox(height: 16),
             CheckboxListTile(
-              title: const Text('Usar total de Ingresos'),
+              title: const Text('Usar total Disponible'),
               value: _useTotalIncome,
               onChanged: (value) {
                 setState(() {
