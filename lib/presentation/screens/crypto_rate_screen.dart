@@ -19,6 +19,18 @@ class CryptoRateScreen extends ConsumerWidget {
             return Card(
               margin: const EdgeInsets.all(8),
               child: ListTile(
+                leading: crypto.image != null ?
+                  Image.network(
+                    crypto.image!,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                    )
+                  : const SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: Icon(Icons.money),
+                  ),
                 title: Text(crypto.name),
                 subtitle: Text('Precio: \$${crypto.price.toStringAsFixed(2)} USD'),
               ),

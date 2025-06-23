@@ -19,6 +19,11 @@ class EuroRateScreen extends ConsumerWidget {
             return Card(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: ListTile(
+                leading: const SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: Icon(Icons.euro),
+                  ),
                 title: Text(rate.name),
                 subtitle: Text('Compra: \$${rate.buy} - Venta: \$${rate.sell}'),
               ),
