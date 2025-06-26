@@ -1,72 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smart_finance/domain/goal.dart'; // Tu domain goal.dart
-
-// Provider para manejar las metas
-final goalsProvider = StateNotifierProvider<GoalsNotifier, List<Goal>>((ref) {
-  return GoalsNotifier();
-});
-
-class GoalsNotifier extends StateNotifier<List<Goal>> {
-  GoalsNotifier() : super([]);
-
-  void addGoal(Goal goal) {
-    state = [goal, ...state]; // Agregar al inicio de la lista
-  }
-
-  void updateGoalAmount(String goalId, double amount) {
-    state = state.map((goal) {
-      if (goal.name == goalId) { // Usando name como ID ya que no hay id en tu domain
-        return Goal(
-          name: goal.name,
-          targetAmount: goal.targetAmount,
-          amountSaved: goal.amountSaved + amount,
-          createdAt: goal.createdAt,
-        );
-      }
-      return goal;
-    }).toList();
-  }
-}
+import 'package:smart_finance/domain/goal.dart';
+import 'package:smart_finance/presentation/providers/goal_provider.dart';
+import 'package:smart_finance/presentation/screens/main_scaffold.dart';
 
 class GoalScreen extends ConsumerWidget {
   const GoalScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final goals = ref.watch(goalsProvider);
+    final goalsAsync = ref.watch(goalsStreamProvider);
 
-    return Scaffold(
+    return MainScaffold(
+      currentIndex: 2,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Text(
-                'Mis Metas',
+                'Metas',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    itemCount: goals.length + 1, // +1 para el botón de agregar
-                    itemBuilder: (context, index) {
-                      if (index == goals.length) {
-                        // Botón para agregar nueva meta
-                        return _buildAddButton(context);
-                      } else {
-                        // Meta existente
-                        return _buildGoalCard(context, goals[index]);
-                      }
+                  child: goalsAsync.when(
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Center(child: Text('Error al cargar metas: $e')),
+                    data: (goals) {
+                      return GridView.builder(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                        ),
+                        itemCount: goals.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == goals.length) {
+                            return _buildAddButton(context);
+                          } else {
+                            return _buildGoalCard(context, goals[index]);
+                          }
+                        },
+                      );
                     },
                   ),
                 ),
@@ -80,19 +60,15 @@ class GoalScreen extends ConsumerWidget {
 
   Widget _buildAddButton(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/add_goal'),
+      onTap: () => context.push('/add-goal'),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.lightBlue.shade100,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.blue, width: 2, style: BorderStyle.solid),
+          border: Border.all(color: Colors.blue, width: 2),
         ),
         child: const Center(
-          child: Icon(
-            Icons.add,
-            size: 50,
-            color: Colors.blue,
-          ),
+          child: Icon(Icons.add, size: 50, color: Colors.blue),
         ),
       ),
     );
@@ -103,7 +79,9 @@ class GoalScreen extends ConsumerWidget {
     final progressPercentage = (progress * 100).clamp(0, 100);
 
     return GestureDetector(
-      onTap: () => context.push('/add_goal/${goal.name}'),
+      onTap: () {
+        context.push('/add-income-goal/${goal.id}');
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.lightGreen.shade100,
@@ -117,10 +95,7 @@ class GoalScreen extends ConsumerWidget {
               Text(
                 goal.name,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
