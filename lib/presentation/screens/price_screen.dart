@@ -2,20 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_finance/presentation/providers/movement_provider.dart';
-import 'package:smart_finance/utils/format_utils.dart';
+import 'package:smart_finance/presentation/screens/balance_screen.dart';
+import 'package:smart_finance/presentation/screens/main_scaffold.dart';
 
 class PriceScreen extends ConsumerWidget {
   const PriceScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final incomeTotal = ref.watch(totalIncomeProvider);
-    final expenseTotal = ref.watch(totalExpenseProvider);
+    final available = ref.watch(availableBalance);
 
-    return Scaffold(
+    return MainScaffold(
+      currentIndex: 4,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -24,32 +25,7 @@ class PriceScreen extends ConsumerWidget {
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Column(
-                    children: [
-                      const Text("Ingresos Totales"),
-                      Text(
-                        formatCurrency(incomeTotal),
-                        style: const TextStyle(
-                          color: Colors.green,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      const Text("Gastos Totales"),
-                      Text(
-                        ('-') + formatCurrency(expenseTotal),
-                        style: const TextStyle(color: Colors.red, fontSize: 20),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              AvailableBalance(available: available),
               const SizedBox(height: 30),
               Expanded(
                 child: Padding(
@@ -120,16 +96,16 @@ class PriceScreen extends ConsumerWidget {
   void _navigate(BuildContext context, String tipo) {
   switch (tipo) {
     case 'dolar':
-      context.go('/dollar-rates');
+      context.push('/dollar-rates');
       break;
     case 'euro':
-      context.go('/euro-rates');
+      context.push('/euro-rates');
       break;
     case 'crypto':
-      context.go('/crypto-rates');
+      context.push('/crypto-rates');
       break;
     case 'conversor':
-      context.go('/currency-converter');
+      context.push('/currency-converter');
       break;
     default:
       ScaffoldMessenger.of(context).showSnackBar(
