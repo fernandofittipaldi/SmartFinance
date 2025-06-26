@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/risk_profile_provider.dart';
+import 'package:smart_finance/presentation/providers/risk_profile_provider.dart';
+import 'package:smart_finance/domain/app_user.dart';
 
-class RiskProfileScreen extends ConsumerStatefulWidget  {
+class RiskProfileScreen extends ConsumerStatefulWidget {
   const RiskProfileScreen({super.key});
 
   @override
@@ -11,7 +12,6 @@ class RiskProfileScreen extends ConsumerStatefulWidget  {
 
 class _RiskProfileScreenState extends ConsumerState<RiskProfileScreen> {
   final Map<String, int> _answers = {};
-  String? _result;
 
   final List<Question> _questions = [
     Question(
@@ -24,11 +24,7 @@ class _RiskProfileScreenState extends ConsumerState<RiskProfileScreen> {
     ),
     Question(
       text: '¿Cuánto tiempo pensás dejar tu dinero invertido?',
-      options: {
-        'Menos de 1 año': 1,
-        '1 a 3 años': 2,
-        'Más de 3 años': 3,
-      },
+      options: {'Menos de 1 año': 1, '1 a 3 años': 2, 'Más de 3 años': 3},
     ),
     Question(
       text: '¿Cuál es tu principal objetivo?',
@@ -40,36 +36,43 @@ class _RiskProfileScreenState extends ConsumerState<RiskProfileScreen> {
     ),
     Question(
       text: '¿Qué nivel de riesgo estás dispuesto a asumir?',
-      options: {
-        'Bajo': 1,
-        'Medio': 2,
-        'Alto': 3,
-      },
+      options: {'Bajo': 1, 'Medio': 2, 'Alto': 3},
     ),
     Question(
       text: '¿Qué nivel de experiencia tenés en inversiones?',
-      options: {
-        'Poca o ninguna': 1,
-        'Moderada': 2,
-        'Alta': 3,
-      },
+      options: {'Poca o ninguna': 1, 'Moderada': 2, 'Alta': 3},
     ),
   ];
 
-  void _evaluateProfile() {
-    final totalScore = _answers.values.fold(0, (a, b) => a + b);
-    String profile;
-    if (totalScore <= 7) {
-      profile = 'Conservador';
-    } else if (totalScore <= 11) {
-      profile = 'Moderado';
-    } else {
-      profile = 'Arriesgado';
+  Future<void> _evaluateProfile() async {
+    final service = ref.read(riskProfileServiceProvider);
+    final profile = service.evaluateProfile(_answers);
+    await service.saveProfile(profile);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Resultado del Perfil'),
+        content: Text('Tu perfil de riesgo es: ${_formatProfile(profile)}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Aceptar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatProfile(RiskProfile profile) {
+    switch (profile) {
+      case RiskProfile.conservative:
+        return 'Conservador';
+      case RiskProfile.moderate:
+        return 'Moderado';
+      case RiskProfile.aggressive:
+        return 'Arriesgado';
     }
-
-    ref.read(riskProfileProvider.notifier).state = profile;
-
-    setState(() => _result = profile);
   }
 
   @override
@@ -82,43 +85,33 @@ class _RiskProfileScreenState extends ConsumerState<RiskProfileScreen> {
           children: [
             ..._questions.map((question) {
               return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(question.text, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    ...question.options.entries.map((entry) {
-                      return RadioListTile<int>(
-                        title: Text(entry.key),
-                        value: entry.value,
-                        groupValue: _answers[question.text],
-                        onChanged: (value) {
-                          setState(() {
-                            _answers[question.text] = value!;
-                          });
-                        },
-                      );
-                    }),
-                  ],
+                padding: const EdgeInsets.only(bottom: 8),
+                child: ExpansionTile(
+                  title: Text(
+                    question.text,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  children: question.options.entries.map((entry) {
+                    return RadioListTile<int>(
+                      title: Text(entry.key),
+                      value: entry.value,
+                      groupValue: _answers[question.text],
+                      onChanged: (value) {
+                        setState(() {
+                          _answers[question.text] = value!;
+                        });
+                      },
+                    );
+                  }).toList(),
                 ),
               );
             }),
             ElevatedButton(
-              onPressed: _answers.length == _questions.length ? _evaluateProfile : null,
+              onPressed: _answers.length == _questions.length
+                  ? _evaluateProfile
+                  : null,
               child: const Text('Evaluar Perfil'),
             ),
-            if (_result != null)
-              Card(
-                margin: const EdgeInsets.only(top: 24),
-                color: Colors.blue[50],
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Tu perfil de riesgo es: $_result',                   
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
