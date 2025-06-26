@@ -64,7 +64,7 @@ class MainScaffold extends ConsumerWidget {
                       '¿Está seguro que desea cerrar sesión?',
                     ),
                     actions: [
-                      TextButton(
+                      FilledButton(
                         onPressed: () => Navigator.of(context).pop(false),
                         child: const Text('No'),
                       ),
