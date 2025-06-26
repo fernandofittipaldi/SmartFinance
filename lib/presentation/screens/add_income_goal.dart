@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'goal_screen.dart';
 import 'package:smart_finance/domain/goal.dart';
+import 'package:smart_finance/presentation/providers/goal_provider.dart';
 
 class AddIncomeGoalScreen extends ConsumerStatefulWidget {
-  final String goalName;
-  
-  const AddIncomeGoalScreen({super.key, required this.goalName});
+  final String goalId;
+
+  const AddIncomeGoalScreen({super.key, required this.goalId});
 
   @override
   ConsumerState<AddIncomeGoalScreen> createState() => _AddIncomeGoalScreenState();
@@ -17,12 +17,6 @@ class _AddIncomeGoalScreenState extends ConsumerState<AddIncomeGoalScreen> {
   final TextEditingController amountController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    amountController.text = '';
-  }
-
-  @override
   void dispose() {
     amountController.dispose();
     super.dispose();
@@ -30,17 +24,22 @@ class _AddIncomeGoalScreenState extends ConsumerState<AddIncomeGoalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final goals = ref.watch(goalsProvider);
+    final goals = ref.watch(goalsNotifierProvider);
+
     final goal = goals.firstWhere(
-      (g) => g.name == widget.goalName,
-      orElse: () => Goal(name: 'Meta no encontrada', targetAmount: 0, amountSaved: 0, createdAt: DateTime.now()),
+      (g) => g.id == widget.goalId,
+      orElse: () => Goal(
+        id: '',
+        name: 'Meta no encontrada',
+        targetAmount: 0,
+        amountSaved: 0,
+        createdAt: DateTime.now(),
+      ),
     );
 
-    if (goal.name == 'Meta no encontrada') {
+    if (goal.id!.isEmpty) {
       return Scaffold(
-        body: const Center(
-          child: Text('Meta no encontrada'),
-        ),
+        body: const Center(child: Text('Meta no encontrada')),
       );
     }
 
@@ -51,7 +50,7 @@ class _AddIncomeGoalScreenState extends ConsumerState<AddIncomeGoalScreen> {
         title: const Text('Agregar Ingreso'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/goal-balance/${widget.goalName}'),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(
@@ -60,17 +59,14 @@ class _AddIncomeGoalScreenState extends ConsumerState<AddIncomeGoalScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Título
               Center(
                 child: Text(
                   'Agregar Ingreso a: ${goal.name}',
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: 20),
-              
-              // Información actual de la meta
+
               Card(
                 elevation: 2,
                 child: Padding(
@@ -108,10 +104,8 @@ class _AddIncomeGoalScreenState extends ConsumerState<AddIncomeGoalScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 30),
-              
-              // Monto a agregar
               const Text("Monto del Ingreso"),
               Container(
                 margin: const EdgeInsets.only(top: 8),
@@ -131,54 +125,31 @@ class _AddIncomeGoalScreenState extends ConsumerState<AddIncomeGoalScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              
-              // Botón guardar
+
               Center(
                 child: ElevatedButton(
                   onPressed: () async {
                     final amountText = amountController.text.trim();
-                    
                     if (amountText.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Por favor, ingresá un monto.'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
+                      _showMessage('Por favor, ingresá un monto.', Colors.red);
                       return;
                     }
-                    
+
                     final amount = double.tryParse(amountText);
                     if (amount == null || amount <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('El monto ingresado no es válido.'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
+                      _showMessage('El monto ingresado no es válido.', Colors.red);
                       return;
                     }
-                    
+
                     if (amount > remainingAmount) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('El monto ingresado supera al total de la meta.'),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
+                      _showMessage('El monto ingresado supera el total restante.', Colors.orange);
                       return;
                     }
-                    
-                    ref.read(goalsProvider.notifier).updateGoalAmount(widget.goalName, amount);
-                    
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Ingreso agregado con éxito'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                    
-                    context.go('/goal-balance/${widget.goalName}');
+
+                    await ref.read(goalsNotifierProvider.notifier).addAmountToGoal(widget.goalId, amount);
+                    _showMessage('Ingreso agregado con éxito', Colors.green);
+
+                    context.pop();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
@@ -187,16 +158,19 @@ class _AddIncomeGoalScreenState extends ConsumerState<AddIncomeGoalScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    "Guardar Ingreso",
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: const Text("Guardar Ingreso", style: TextStyle(color: Colors.white)),
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void _showMessage(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: color),
     );
   }
 }
